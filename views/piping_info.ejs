@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/index.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piping Information</title>
+</head>
+<body>
+
+    
+
+    <div class="container">
+
+        <div class="bar">
+            <p>Piping Information</p>
+        </div>
+    
+     
+
+        <div class="pinfo-container">
+
+            <% for(i = 0;i<info_name.length;i++) { %>
+
+            <div>
+                <label for=""><%=info_name[i]%></label>
+                <input type="text" name="" id="data<%=i%>" value="<%= objList[i] %>" readonly>
+            </div>
+
+            <% } %>
+        
+
+        </div>
+
+        <div>
+            <button id="btnEdit">Edit</button>
+            <button id="btnDelete">Delete</button>
+        </div>
+
+    </div>
+    
+    <script>
+        const btnEdit = document.getElementById('btnEdit');
+        const btnDelete = document.getElementById('btnDelete')
+
+        const line_number = document.getElementById('data0').value
+
+        btnEdit.addEventListener('click',()=>{
+            console.log("edit click : " + line_number)
+            // window.location.href = '';
+
+
+        });
+
+        btnDelete.addEventListener('click',() =>{
+            console.log("delete click")
+            window.location.href = '/';
+            fetch('/deleteInfo',{
+                    method:"POST",
+                    body:JSON.stringify({ 
+                        line_number:line_number
+                    }),
+                    headers:{
+                        "Content-Type": "application/json"
+                    }
+                })
+        })
+    </script>
+
+</body>
+</html>

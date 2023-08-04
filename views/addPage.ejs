@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AddPiping</title>
+    <link rel="stylesheet" href="addPageStyle.css">
+</head>
+<body> 
+    <button id="btnRandom">Random</button>
+
+    <div class="box-2">
+        <div class="titile">
+            <h1><%= header_name %></h1>
+        </div>
+        
+
+        <form id="form1" action="" method="post">
+
+            <div class="box-1">
+                <% for(i = 0;i<namelist.length;i++){ %>
+                    <div class="box">
+                        <label ><%= namelist[i] %></label >
+                        <input type="<%= typelist[i] %>" name="<%namelist[i]%>" id="input_<%=i%>">
+                    </div>
+    
+                <%}%>
+            </div>
+
+            
+
+            
+
+        </form>
+
+        <div class="btn">
+            <button id="btnAddPipingSave">Save</button>
+            <button id="btnAddPipingCancel">Cancel</button>
+        </div>
+
+    </div>
+
+    <script>
+
+        
+
+        const btnsave = document.getElementById('btnAddPipingSave')
+        const btnCancel = document.getElementById('btnAddPipingCancel')
+        const btnRandom = document.getElementById('btnRandom')
+
+        const queryString = window.location.search
+        const params = new URLSearchParams(queryString)
+        const table_name = params.get('table_name')
+        
+
+        document.addEventListener('DOMContentLoaded',()=>{
+            
+        })
+
+        const form = document.getElementById('form1')
+        const edittext_size = form.querySelectorAll('input').length
+        // form.addEventListener('submit',(event)=>{
+        //     event.preventDefault();
+
+        // })
+
+        btnsave.addEventListener('click',()=>{
+            var target = ''
+            var dataList = []
+            var null_status = false
+
+            const line_number = params.get('line_number')
+            const cml_number = params.get('cml_number')
+            const tp_number = params.get('tp_number')
+
+            if(null_status)return
+
+            
+            if(table_name === 'info'){
+                console.log("Click Save InfoData")
+                for(var i = 0;i<edittext_size;i++){
+                    const edittext = document.getElementById("input_" + i)
+                    dataList.push(edittext.value)
+                    if(edittext.value === '' || edittext.value === null){
+                        null_status = true
+                    }
+                }
+                fetch('insertInfo',{
+                    method:"POST",
+                    body:JSON.stringify({ 
+                        data:dataList
+                    }),
+                    headers:{
+                        "Content-Type": "application/json"
+                    }
+                }).then(response=>{
+                    response.text().then((str)=>{
+                        console.log('data = ' + str)
+                    })
+                })
+            }
+            else if(table_name === 'cml'){
+                console.log("Click Save CMLData")
+                dataList.push(line_number)
+                for(var i = 0;i<edittext_size;i++){
+                    const edittext = document.getElementById("input_" + i)
+                    dataList.push(edittext.value)
+                    if(edittext.value === '' || edittext.value === null){
+                        null_status = true
+                    }
+                }
+                fetch('insertCML',{
+                    method:"POST",
+                    body:JSON.stringify({ 
+                        data:dataList
+                    }),
+                    headers:{
+                        "Content-Type": "application/json"
+                    }
+                }).then(response=>{
+                    response.text().then((str)=>{
+                        console.log('data = ' + str)
+                    })
+                })
+            }
+            else if(table_name === 'tp'){
+                console.log("Click Save TestPointData")
+                dataList.push(line_number)
+                dataList.push(cml_number)
+                for(var i = 0;i<edittext_size;i++){
+                    const edittext = document.getElementById("input_" + i)
+                    dataList.push(edittext.value)
+                    if(edittext.value === '' || edittext.value === null){
+                        null_status = true
+                    }
+                }
+
+                console.log(dataList)
+                fetch('insertTP',{
+                    method:"POST",
+                    body:JSON.stringify({ 
+                        data:dataList
+                    }),
+                    headers:{
+                        "Content-Type": "application/json"
+                    }
+                }).then(response=>{
+                    response.text().then((str)=>{
+                        console.log('data = ' + str)
+                    })
+                })
+            }
+            else if(table_name === 'tn'){
+                console.log("Click Save ThicknessData")
+                for(var i = 0;i<edittext_size;i++){
+                    const edittext = document.getElementById("input_" + i)
+                    dataList.push(edittext.value)
+                    if(edittext.value === '' || edittext.value === null){
+                        null_status = true
+                    }
+                }
+                fetch('insertTN',{
+                    method:"POST",
+                    body:JSON.stringify({ 
+                        data:dataList
+                    }),
+                    headers:{
+                        "Content-Type": "application/json"
+                    }
+                }).then(response=>{
+                    response.text().then((str)=>{
+                        console.log('data = ' + str)
+                    })
+                })
+            }
+
+            // window.location.href = document.referrer
+            
+
+            
+        })
+
+
+        btnCancel.addEventListener('click',()=>{
+            console.log("Click Cancel ")
+            // window.location.href = '/'
+            window.location.href = document.referrer
+        })
+
+        btnRandom.addEventListener('click',()=>{
+            var dataList = []
+            for(var i = 0;i<edittext_size;i++){
+                dataList.push(document.getElementById("input_" + i).value)
+                
+                if(i == 0)continue
+                document.getElementById("input_" + i).value = parseInt(Math.random() * 100)
+            }
+
+            console.log('element : ' + form.querySelectorAll('input').length)
+        })
+
+    
+
+    </script>
+
+    
+</body>
+</html>

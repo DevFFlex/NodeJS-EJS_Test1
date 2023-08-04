@@ -1,0 +1,52 @@
+body{
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.titile{
+    /* border: 1px solid red; */
+    text-align: center;
+}
+
+.box-2{
+    
+    /* border: 2px solid black; */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 50px;
+    
+}
+
+.box-1{
+    width: fit-content;
+    /* border: 1px solid blue; */
+    /* align-items: center; */
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-column-gap: 50px;
+    
+
+}
+
+.box{
+    width: 100%;
+    /* border: 1px solid rgb(20, 240, 148); */
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-rows: auto;
+}
+
+.btn{
+    margin-top: 20px;
+    /* border: 2px solid red; */
+    display: flex;
+    justify-content: center;
+}
+
+.btn button{
+    margin-inline: 10px;
+    padding-inline: 50px;
+    padding-block: 10px;
+
+}

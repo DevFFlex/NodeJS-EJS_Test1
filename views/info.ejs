@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/index.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomePage</title>
+</head>
+<body>
+
+    
+
+    <div class="container">
+
+        <div class="bar">
+            <p>PIPING</p>
+        </div>
+    
+        <div class="btnAddPiping">
+            <div>
+                <input id="btnAddPiping" type="button" value="Add Piping">
+            </div>
+        </div>
+
+        <div class="tableInfoData">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Line Number</th>
+                        <th>Location</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Pip Size (inch)</th>
+                        <th>Service</th>
+                        <th>Material</th>
+                        <th>-----------</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <% if (datalist.length > 0) { %>
+
+                        <% for(i = 0;i<datalist.length;i++){ %>
+                        <tr>
+                            <td><%= datalist[i].line_number %></td>
+                            <td><%= datalist[i].location %></td>
+                            <td><%= datalist[i].from %></td>
+                            <td><%= datalist[i].to %></td>
+                            <td><%= datalist[i].pipe_size %></td>
+                            <td><%= datalist[i].service %></td>
+                            <td><%= datalist[i].material %></td>
+                            <td>
+                                <div>
+                                    <a id="a_info" href="pipingInfo/<%=datalist[i].line_number%>">Info</a>
+                                    <a  id="a_details" href="pipingDetails?line_number=<%=datalist[i].line_number%>&cml_number=-1&tp_number=-1">Details</a>
+                                </div>
+
+                            </td>
+                        </tr>
+                        <% } %>
+
+                    <% } %>
+                    
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+    
+    <script>
+        const btnAddPiping = document.getElementById('btnAddPiping');
+
+        btnAddPiping.addEventListener('click',()=>{
+
+            console.log("Hello World")
+            window.location.href = '/addPage?table_name=info';
+        });
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/index.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piping Information</title>
+</head>
+<body>
+
+    
+
+    <div class="container">
+
+        <div class="bar">
+            <h1>Piping Details</h1>
+            <button onclick="onClickHome()">Home</button>
+        </div>
+
+        <div class="pdetails-container">
+            
+            <div class="id_show">
+                <h1>Line Number :</h1>
+                <h1 id="tv_linenumber"><%=line_number%></h1>
+            </div>
+
+            <div class="bar-child">
+                <p>CML</p>
+                <div class="btnAddCML">
+                    <input id="btnAddCML" type="button" value="Add CML">
+                </div>
+            </div>
+
+
+            <div class="tableInfoData">
+                <table id="cml_table">
+                    <thead>
+                        <tr>
+                            <th>CML Number</th>
+                            <th>CML Description</th>
+                            <th>Actual Outside Diameter</th>
+                            <th>Design Thickness</th>
+                            <th>Structural Thickness</th>
+                            <th>Required Thickness</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody">
+
+                        <% for(i = 0;i<cmlList.length;i++) { %>
+                        <tr>
+                            <td><%= cmlList[i].cml_number%></td>
+                            <td><%= cmlList[i].cml_description%></td>
+                            <td><%= cmlList[i].actual_outside_diameter%></td>
+                            <td><%= cmlList[i].design_thickness%></td>
+                            <td><%= cmlList[i].structural_thickness%></td>
+                            <td><%= cmlList[i].required_thickness%></td>
+            
+                            <td >
+                                <div class="buttonTD">
+                                    <button id="btnCMLView" name="<%=line_number%>_<%=cmlList[i].cml_number%>">View TP</button>
+                                    <button id="btnCMLEdit" name="<%=line_number%>_<%=cmlList[i].cml_number%>">Edit</button>
+                                    <button id="btnCMLDelete_<%=i%>" name="<%=line_number%>_<%=cmlList[i].cml_number%>">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <% } %>
+                        
+                    </tbody>
+                </table>
+            </div>
+        
+
+        </div>
+
+
+        <%if (cml_number !== '-1') { %>
+        <div class="pdetails-container">
+            <div class="id_show">
+                <h1>CML Number :</h1>
+                <h1 id="tv_cmlnumber"><%=cml_number%></h1>
+            </div>
+            <div class="bar">
+                <p>Test Point</p>
+                <div class="btnAddTP">
+                    <input id="btnAddTP" type="button" value="Add Test Point">
+                </div>
+            </div>
+
+            <div class="tableInfoData">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>TP Number</th>
+                            <th>TP Description</th>
+                            <th>Note</th>
+                            <th>-----------</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <% for(i = 0;i<tpList.length;i++) { %>
+                        <tr>
+                            <td><%= tpList[i].tp_number %></td>
+                            <td><%= tpList[i].tp_description %></td>
+                            <td><%= tpList[i].note %></td>
+                            <td>
+                                <div class="buttonTD">
+                                    <button>View Thickness</button>
+                                    <button>Edit</button>
+                                    <button>Delete</button>
+                                </div>
+
+                            </td>
+                        </tr>
+
+                        <% } %>
+                        
+                    </tbody>
+                </table>
+            </div>
+        
+
+        </div>
+        <% } %>
+
+
+        <% if (tp_number !== '-1') { %>
+        <div class="pdetails-container">
+            <div class="id_show">
+                <h1>TestPoint Number :</h1>
+                <h1 id="tv_tpnumber"><%=tp_number%></h1>
+            </div>
+            <div class="bar">
+                <p>Thickness</p>
+                <div class="btnAddTN">
+                    <input id="btnAddTN" type="button" value="Add Thickness">
+                </div>
+            </div>
+
+            <div class="tableInfoData">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Inspection Data</th>
+                            <th>Actual Thickness (mm)</th>
+                            <th>-----------</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>-</td>
+                            <td>-</td>
+                            <td >
+                                <div class="buttonTD">
+                                    <button>Edit</button>
+                                    <button>Delete</button>
+                                </div>
+
+                            </td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+        
+
+        </div>
+        <% } %>
+        
+
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded',()=>{
+            // location.reload()
+            const currentURL = window.location.href
+        })
+
+        function onClickHome(){
+            window.location.href = "/"
+        }
+        
+        const datacount = document.getElementById('tbody').childElementCount
+
+        const btnAddCML = document.getElementById('btnAddCML');
+        const btnAddTP  = document.getElementById('btnAddTP');
+        const btnAddTN  = document.getElementById('btnAddTN');
+
+        const label_linenumber = document.getElementById('tv_linenumber');
+        
+
+        btnAddCML.addEventListener('click',()=>{
+            console.log("Add CML : ")
+            window.location.href = `/addPage?table_name=cml&line_number=${label_linenumber.innerText}`;
+
+        });
+
+        try{
+            btnAddTP.addEventListener('click',()=>{
+                const line_number = document.getElementById("tv_linenumber").innerText
+                const cml_number = document.getElementById("tv_cmlnumber").innerText
+                console.log("Add Test Point")
+                window.location.href = `/addPage?table_name=tp&line_number=${line_number}&cml_number=${cml_number}`;
+            });
+
+        }catch(err){}
+
+        try{
+            btnAddTN.addEventListener('click',()=>{
+                
+                console.log("Add Thickness")
+                window.location.href = `/addPage?table_name=tn&line_number${line_number}=&cml_number=${cml_number}`;
+            });
+        }catch(err){}
+
+        
+        
+        for(var i = 0;i<datacount;i++){
+            const btnCMLDelete = document.getElementById('btnCMLDelete_' + i)
+            btnCMLDelete.addEventListener('click',()=>{
+                event.preventDefault()
+                const datalist = btnCMLDelete.name.split("_")
+                console.log([1])
+                fetch('deleteCML',{
+                    method:"POST",
+                    body:JSON.stringify({ 
+                        line_number:datalist[0],
+                        cml_number:datalist[1]
+                    }),
+                    headers:{
+                        "Content-Type": "application/json"
+                    }
+                })
+
+                location.reload()
+            })
+        }
+
+        
+    
+
+    </script>
+
+</body>
+</html>

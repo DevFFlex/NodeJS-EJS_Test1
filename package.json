@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "axios": "^1.4.0",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "nodemon": "^3.0.1",
+    "sqlite3": "^5.1.6"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "name": "nodejs-test1",
+  "version": "1.0.0",
+  "description": "ability test",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DevFFlex/NodeJs-Test2.git"
+  },
+  "author": "DevFFlex",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DevFFlex/NodeJs-Test2/issues"
+  },
+  "homepage": "https://github.com/DevFFlex/NodeJs-Test2#readme"
+}
