@@ -6,7 +6,7 @@ db.serialize(function(){
     var sql_command1 = 'CREATE TABLE IF NOT EXISTS Info(line_number varchar(200) PRIMARY KEY,location varchar(200),`from` varchar(200),`to` varchar(200),drawing_number varchar(200),service varchar(200),material varchar(200),inservice_date date,pipe_size INTEGER,original_thickness INTEGER,stress INTEGER,joint_efficiency INTEGER,ca INTEGER,design_life INTEGER,design_pressure INTEGER,operating_pressure INTEGER,design_temperature INTEGER,operating_temperature INTEGER);'
     var sql_command2 = 'CREATE TABLE IF NOT EXISTS CML(line_number varchar(200),cml_number INTEGER PRIMARY KEY AUTOINCREMENT,cml_description varchar(200),actual_outside_diameter INTEGER,design_thickness INTEGER,structural_thickness INTEGER,required_thickness INTEGER,FOREIGN KEY (line_number) REFERENCES Info(line_number));'
     var sql_command3 = 'CREATE TABLE IF NOT EXISTS TestPoint(line_number varchar(200),cml_number INTEGER ,tp_number INTEGER PRIMARY KEY AUTOINCREMENT,tp_description INTEGER,note varchar(200),FOREIGN KEY (line_number) REFERENCES Info(line_number),FOREIGN KEY (cml_number) REFERENCES CML(cml_number));'
-    var sql_command4 = 'CREATE TABLE IF NOT EXISTS Thickness(line_number varchar(200),cml_number INTEGER,tp_number INTEGER,inspection_date date,actual_thickness INTEGER,FOREIGN KEY (line_number) REFERENCES Info(line_number),FOREIGN KEY (cml_number) REFERENCES CML(cml_number),FOREIGN KEY (tp_number) REFERENCES TestPoint(tp_number));'
+    var sql_command4 = 'CREATE TABLE IF NOT EXISTS Thickness(line_number varchar(200),cml_number INTEGER,tp_number INTEGER,tn_number INTEGER PRIMARY KEY AUTOINCREMENT,inspection_date date,actual_thickness INTEGER,FOREIGN KEY (line_number) REFERENCES Info(line_number),FOREIGN KEY (cml_number) REFERENCES CML(cml_number),FOREIGN KEY (tp_number) REFERENCES TestPoint(tp_number));'
     db.run(sql_command1)
     db.run(sql_command2)
     db.run(sql_command3)
@@ -93,7 +93,7 @@ function get(selectTable,conditionObject = {}){
 
 
 // ------------- Delete ----------
-function remove(selectTable,conditionObject,deleteAllRows = false){
+function remove(selectTable,conditionObject = {}){
     var conditionObjectCount = (conditionObject !== null) ? Object.values(conditionObject).length : 0
     
     if(conditionObjectCount === 0 && !deleteAllRows)return
@@ -117,20 +117,10 @@ function remove(selectTable,conditionObject,deleteAllRows = false){
 
     return new Promise((resolve,reject)=>{
         db.serialize(()=>{
-            if(!getAllRows){
-                // console.log(getCommand)
-                db.get(getCommand,(err,row)=>{
-                    if(err)reject(err)
-                    else resolve(row)
-                })
-            }else{
-                getCommand = getCommand.replace("WHERE","")
-                // console.log(getCommand)
-                db.all(getCommand, (err, rows) => {
-                    if (err)reject(err)
-                    else resolve(rows)
-                })
-            }
+            db.all(getCommand, (err, rows_row) => {
+                if (err)reject(err)
+                else resolve(rows_row)
+            })
         })
     })
 }

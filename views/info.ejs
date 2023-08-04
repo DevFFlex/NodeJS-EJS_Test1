@@ -82,7 +82,21 @@
         }
 
         function onClickAddPiping(){
-            window.location.href = '/addPage?table_name=info';
+            fetch('input_page',{
+                method:"POST",
+                body:JSON.stringify({ 
+                    from:'info',
+                    datalist:[]
+                }),
+                headers:{
+                    "Content-Type": "application/json"
+                }
+            }).then((render)=>{
+                render.text().then((str)=>{
+                    document.write(str)
+                })
+                
+            })
         }
 
     </script>

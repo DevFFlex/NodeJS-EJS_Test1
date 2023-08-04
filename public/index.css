@@ -164,7 +164,7 @@ body{
 .id_show{
     width:auto;
     height: auto;
-    border: 2px solid red;
+    /* border: 2px solid red; */
     margin-inline: 50px;
     display: grid;
     grid-template-columns: 80% auto;

@@ -3,6 +3,7 @@ const router = express.Router()
 const path = require('path')
 const db = require('../file/database')
 const process = require('../file/process')
+const { send } = require('process')
 
 const info_name = ['Line Number','Location','From','To','DrawingNumber','Service','Material','Inservice Date','Pipe size',
     'Original Thickness','Stress','Joint Efficiency','Ca','Design Life','Design Pressure','Operating Pressure','Design Temperature','Operating Temperature']
@@ -27,42 +28,42 @@ router.get('/',(req,res)=>{
 
     
 })
-router.get('/addPage',(req,res)=>{
-    const table_name = req.query.table_name
-    console.log(table_name)
 
-    if(table_name === 'info'){
-        res.render('addPage.ejs',{
-            header:'info',
-            header_name:"Add Piping",
-            namelist:info_name,
-            typelist:info_type
-        })
-    }else if(table_name === 'cml'){
-        res.render('addPage.ejs',{
-            header:'cml',
-            header_name:"Add CML",
-            namelist:cml_name,
-            typelist:cml_type
-        })
-    }else if(table_name === 'tp'){
-        res.render('addPage.ejs',{
-            header:'tn',
-            header_name:"Add Test Point",
-            namelist:tp_name,
-            typelist:tp_type
-        })
-    }else if(table_name === 'tn'){
-        res.render('addPage.ejs',{
-            header:'tn',
-            header_name:"Add Thickness",
-            namelist:tn_name,
-            typelist:tn_type,
-            
-        })
-    }else{
-        res.send('No Page')
+router.post('/input_page',(req,res)=>{
+    const data_body = req.body
+    const from = data_body.from
+    const datalist = data_body.datalist
+    console.log(datalist.length)
+    var header_name = ""
+    var namelist = null
+    var typelist = null
+    
+
+    if(from === 'info'){
+        header_name = "Insert Pipe"
+        namelist = info_name
+        typelist = info_type
+    }else if(from === 'cml'){
+        header_name = "Insert CML"
+        namelist = cml_name
+        typelist = cml_type
+    }else if(from === 'tp'){
+        header_name = "Insert TestPoint"
+        namelist = tp_name
+        typelist = tp_type
+    }else if(from === 'tn'){
+        header_name = "Insert Thickness"
+        namelist = tn_name
+        typelist = tn_type
     }
+
+    res.render('addPage.ejs',{
+        header:from,
+        header_name:header_name,
+        namelist:namelist,
+        typelist:typelist,
+        datalist:datalist
+    })
 
     
 })
@@ -108,13 +109,19 @@ router.get('/pipingDetails',(req,res)=>{
 
     }).then(([cml_data,tp_data])=>{
         
-
+        return new Promise((resolve,reject)=>{
+            db.get(db.SelectTable.TN,{line_number:line_number,cml_number:cml_number,tp_number:tp_number}).then((tn_data)=>{
+                resolve([cml_data,tp_data,tn_data])
+            })
+        })
+    }).then(([cml_data,tp_data,tn_data])=>{
         res.render('piping_details.ejs',{
             line_number:line_number,
             cml_number:cml_number,
             tp_number:tp_number,
             cmlList:cml_data,
-            tpList:tp_data
+            tpList:tp_data,
+            tnList:tn_data
     
         })
     })
@@ -129,62 +136,27 @@ router.get('/pipingDetails',(req,res)=>{
 //------------------------------------- DB --------------------------
 
 
-router.post('/insertInfo',(req,res)=>{
+router.post('/api-insert',(req,res)=>{
     const data = req.body
 
-    db.insert(db.SelectTable.INFO,data.data).then((data)=>{
-        res.send('finish')
-    })
+    const table_name = data.table_name
+    const datalist   = data.datalist
+
+    console.log(datalist)
+
+    var selector = null
+    if(table_name === 'info')selector = db.SelectTable.INFO
+    else if(table_name === 'cml')selector = db.SelectTable.CML
+    else if(table_name === 'tp')selector = db.SelectTable.TP
+    else if(table_name === 'tn')selector = db.SelectTable.TN
+
+    if(selector !== null){
+        db.insert(selector,datalist).then((data)=>{
+            res.send('finish')
+        })
+    }else console.log('insert error tablename is null!!')
 
 })
-
-router.post('/insertCML',(req,res)=>{
-    const data = req.body
-    var cmlList_client = data.data
-    console.log(cmlList_client.length)
-
-    db.get(db.SelectTable.INFO,{},true).then((row)=>{
-
-        var actual_outside_diameter = process.actualOutsideDiameter_Cal(row.pipe_size)
-        var design_thickness = process.designThickness_Cal(row.design_pressure,actual_outside_diameter,row.stress,row.joint_efficiency)
-        var structural_thickness = process.structuralThickness_Cal()
-        var required_thickness = process.requiredThickness_Cal(design_thickness,structural_thickness)
-
-        console.log(`aod = ${actual_outside_diameter}\ndt = ${design_thickness}\nst = ${structural_thickness}\nrt = ${required_thickness}`)
-
-        cmlList_client.push(actual_outside_diameter)
-        cmlList_client.push(design_thickness)
-        cmlList_client.push(structural_thickness)
-        cmlList_client.push(required_thickness)
-
-        db.insert(db.SelectTable.CML,cmlList_client)
-    })
-
-    // db.insertCML(data.data)
-    res.send('{box:"Hello World"}')
-})
-
-router.post('/insertTP',(req,res)=>{
-    const data = req.body.data
-
-    data[1] = parseInt(data[1])
-    data[2] = parseInt(data[2])
-
-    db.insertTP(data)
-    res.send('{box:"Hello World"}')
-})
-
-router.post('/insertTN',(req,res)=>{
-    const data = req.body
-
-    console.log(data)
-
-    // db.insertCML(data.data)
-    res.send('{box:"Hello World"}')
-})
-
-
-
 
 router.post('/deleteInfo',(req,res)=>{
     const line_number = req.body.line_number

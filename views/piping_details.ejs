@@ -17,6 +17,7 @@
             <button onclick="onClickHome()">Home</button>
         </div>
 
+        <!-- ---------------------------------------------- -->
         <div class="pdetails-container">
             
             <div class="id_show">
@@ -58,9 +59,9 @@
             
                             <td >
                                 <div class="buttonTableDiv">
-                                    <button onclick="onClickView('cml','<%=line_number%>','<%=cmlList[i].cml_number%>','-1')">View TP</button>
-                                    <button onClick="onClickEdit('cml')">Edit</button>
-                                    <button onclick="onClickDelete('cml','<%=line_number%>','<%=cmlList[i].cml_number%>')">Delete</button>
+                                    <button onclick="onClickView  ('cml',['<%=line_number%>','<%=cmlList[i].cml_number%>'])">View TP</button>
+                                    <button onClick="onClickEdit  ('cml',['<%=line_number%>','<%=cmlList[i].cml_number%>'])">Edit</button>
+                                    <button onclick="onClickDelete('cml',['<%=line_number%>','<%=cmlList[i].cml_number%>'])">Delete</button>
                                 </div>
                             </td>
                         </tr>
@@ -74,6 +75,7 @@
         </div>
 
 
+        <!-- ---------------------------------------------- -->
         <%if (cml_number !== '-1') { %>
         <div class="pdetails-container">
         
@@ -85,7 +87,7 @@
             <div class="bar-child">
                 <p>Test Point</p>
                 <div class="btnAddCML">
-                    <button onclick="onClickAdd('tp','<%=line_number%>','<%=cml_number%>','<%=tpList[i].tp_number%>')">Add CML</button>
+                    <button onclick="onClickAdd('tp','<%=line_number%>','<%=cml_number%>','-1')">Add CML</button>
                 </div>
             </div>
 
@@ -124,25 +126,27 @@
         
 
         </div>
-
-
         <% } %>
 
 
+        <!-- ---------------------------------------------- -->
         <% if (tp_number !== '-1') { %>
         <div class="pdetails-container">
+        
             <div class="id_show">
-                <h1>TestPoint Number :</h1>
-                <h1 id="tv_tpnumber"><%=tp_number%></h1>
+                <h1>TP Number :</h1>
+                <h1 id="tv_linenumber"><%=tp_number%></h1>
             </div>
-            <div class="bar">
-                <p>Thickness</p>
-                <div class="btnAddTN">
-                    <input id="btnAddTN" type="button" value="Add Thickness">
+
+            <div class="bar-child">
+                <p>Test Point</p>
+                <div class="btnAddCML">
+                    <button onclick="onClickAdd('tn','<%=line_number%>','<%=cml_number%>','<%=tp_number%>')">Add Thickness</button>
                 </div>
             </div>
 
-            <div class="tableInfoData">
+
+            <div class="tableAllDiv">
                 <table>
                     <thead>
                         <tr>
@@ -152,17 +156,20 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>-</td>
-                            <td>-</td>
-                            <td >
-                                <div class="buttonTD">
-                                    <button>Edit</button>
-                                    <button>Delete</button>
-                                </div>
 
+                        <% for(i = 0;i<tnList.length;i++) { %>
+                        <tr>
+                            <td><%=tnList[i].inspection_date%></td>
+                            <td><%=tnList[i].actual_thickness%></td>
+            
+                            <td >
+                                <div class="buttonTableDiv">
+                                    <button onClick="onClickEdit('tp','<%=line_number%>','<%=tpList[i].cml_number%>','<%=tpList[i].tp_number%>')">Edit</button>
+                                    <button onclick="onClickDelete('tp','<%=line_number%>','<%=tpList[i].cml_number%>','<%=tpList[i].tp_number%>')">Delete</button>
+                                </div>
                             </td>
                         </tr>
+                        <% } %>
                         
                     </tbody>
                 </table>
@@ -177,7 +184,6 @@
     
     <script>
         document.addEventListener('DOMContentLoaded',()=>{
-            // location.reload()
             const currentURL = window.location.href
         })
 
@@ -186,9 +192,16 @@
         }
 
         function onClickAdd(table,line_number,cml_number,tp_number){
-            if(table === 'cml'    )window.location.href = `/addPage?table_name=${table}&line_number=${line_number}`
-            else if(table === 'tp')window.location.href = `/addPage?table_name=${table}&line_number=${line_number}&cml_number=${cml_number}`
-            else if(table === 'tn')window.location.href = `/addPage?table_name=${table}&line_number=${line_number}&cml_number=${cml_number}&tp_number=${tp_number}`
+            fetch('input_page',{
+                method:"POST",
+                body:JSON.stringify({ 
+                    from:table,
+                    datalist:[]
+                }),
+                headers:{
+                    "Content-Type": "application/json"
+                }
+            })
         }
 
 
@@ -198,19 +211,20 @@
 
 
 
-        function onClickView(table,line_number,cml_number,tp_number){
-            alert([line_number,cml_number,tp_number])
-            if(table === 'cml'){
-               window.location.href = `pipingDetails?line_number=${line_number}&cml_number=${cml_number}&tp_number=${tp_number}`
-            }else if(table === 'tp'){
-                window.location.href = `pipingDetails?line_number=${line_number}&cml_number=${cml_number}&tp_number=${tp_number}`
-            }
+        function onClickView(table,args){
+            alert([table,args])
+            // if(table === 'cml'){
+            //    window.location.href = `pipingDetails?line_number=${line_number}&cml_number=${cml_number}&tp_number=${tp_number}`
+            // }else if(table === 'tp'){
+            //     window.location.href = `pipingDetails?line_number=${line_number}&cml_number=${cml_number}&tp_number=${tp_number}`
+            // }
         }
-        function onClickEdit(table,line_number,cml_number,tp_number){
+        function onClickEdit(table,args){
             // alert('ClickEdit')
         }
-        function onClickDelete(table,line_number,cml_number,tp_number){
-            alert(table+"\t"+line_number+"\n"+cml_number)
+
+        function onClickDelete(table,args){
+            // alert(table+"\t"+line_number+"\n"+cml_number)
             event.preventDefault()
             fetch('deleteCML',{
                 method:"POST",
