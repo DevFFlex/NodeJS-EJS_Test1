@@ -14,57 +14,20 @@ db.serialize(function(){
 
 })
 
-
-function insertInfo(info_data){
-    const insertQuery = `INSERT INTO Info (line_number,location,"from","to",drawing_number,service,material,inservice_date,pipe_size,original_thickness,stress,joint_efficiency,ca,design_life,design_pressure,operating_pressure,design_temperature,operating_temperature) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);`
-
-    db.serialize(function(){
-        db.run(insertQuery,info_data,(result,error)=>{
-            if(!error){
-                console.log("database run : " + result)
-            }else{
-                console.log("database error : " + error)
-            }
-        })
-    })
+const SelectTable = {
+    INFO:1,
+    CML:2,
+    TP:3,
+    TN:4
 }
 
-function getInfoAll(){
-    const _sql = 'SELECT * FROM Info'
 
+function sql_run(sql_command,datalist = null){
     return new Promise((resolve,reject)=>{
-        db.serialize(() => {
-            db.all(_sql, (err, rows) => {
-              if (err) {
-                reject(err);
-              } else {
-                resolve(rows);
-              }
-            });
-        });
-    })
-}
-
-function deleteInfo(line_number){
-    const _sql = `DELETE FROM Info WHERE line_number = '${line_number}'`
-
-    db.serialize(() => {
-        db.run(_sql,(resault,err) =>{
-            if(!err)console.log('delete success')
-            else console.log('delete fail : ' + err)
-        })
-    })
-
-}
-
-function getInfo(line_number){
-    const _sql = `SELECT * FROM Info WHERE line_number="${line_number}"`
-
-    return new Promise((resolve,reject) =>{
-        db.serialize(() => {
-            db.get(_sql,(err,row) =>{
-                if(err)reject(err)
-                else resolve(row)
+        db.serialize(function(){
+            db.run(sql_command,datalist,(result,error)=>{
+                if(!error)resolve(result)
+                else reject(error)
             })
         })
     })
@@ -72,178 +35,110 @@ function getInfo(line_number){
 
 
 
+// ------------- Insert ---------
 
+function insert(selectTable,dataList){
+    const insertInfoCommand = `INSERT INTO Info (line_number,location,"from","to",drawing_number,service,material,inservice_date,pipe_size,original_thickness,stress,joint_efficiency,ca,design_life,design_pressure,operating_pressure,design_temperature,operating_temperature) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);`
+    const insertCMLCommand = `INSERT INTO CML (line_number,cml_description,actual_outside_diameter,design_thickness,structural_thickness,required_thickness) VALUES (?,?,?,?,?,?);`
+    const insertTPCommand = `INSERT INTO TestPoint (line_number,cml_number,tp_description,note) VALUES (?,?,?,?);`
+    const insertTNCommand = `INSERT INTO Thickness (line_number,cml_number,tp_number,inspection_date,actual_thickness) VALUES (?,?,?,?,?);`
 
-function insertCML(cmlList){
-    const _sql = `INSERT INTO CML (line_number,cml_description,actual_outside_diameter,design_thickness,structural_thickness,required_thickness) VALUES (?,?,?,?,?,?);`
-
-    db.serialize(function(){
-        db.run(_sql,cmlList,(result,error)=>{
-            if(!error){
-                console.log("database run : " + result)
-            }else{
-                console.log("database error : " + error)
-            }
-        })
-    })
+    switch(selectTable){
+        case SelectTable.INFO:
+            return sql_run(insertInfoCommand,dataList)
+        case SelectTable.CML:
+            return sql_run(insertCMLCommand,dataList)
+        case SelectTable.TP:
+            return sql_run(insertTPCommand,dataList)
+        case SelectTable.TN:
+            return sql_run(insertTNCommand,dataList)
+    }
 }
 
-function getCMLAll(line_number){
-    const _sql = `SELECT * FROM CML WHERE line_number = '${line_number}'`
+
+// ------------- Get ---------
+
+function get(selectTable,conditionObject = {}){
+    var conditionObjectCount = (conditionObject !== null) ? Object.values(conditionObject).length : 0
+
+    var tablename = ''
+    if(selectTable === SelectTable.INFO)tablename ='Info'
+    else if(selectTable === SelectTable.CML)tablename ='CML'
+    else if(selectTable === SelectTable.TP)tablename ='TestPoint'
+    else if(selectTable === SelectTable.TN)tablename ='Thickness'
+
+    
+    var getCommand = `SELECT * FROM ${tablename}`
+    if(conditionObjectCount > 0)getCommand += ' WHERE '
+    Object.keys(conditionObject).forEach((key) => {
+        const value = conditionObject[key]
+        getCommand += key + " = '" + value + "' "
+
+        if(conditionObjectCount > 1)getCommand += "AND "
+        else getCommand += ";"
+        conditionObjectCount--
+    })
 
     return new Promise((resolve,reject)=>{
-        db.serialize(() =>{
-            db.all(_sql,(err,rows)=>{
-                if(err)reject(err)
-                else resolve(rows)
+        db.serialize(()=>{
+            console.log(getCommand)
+            db.all(getCommand, (err, rows_row) => {
+                if (err)reject(err)
+                else resolve(rows_row)
             })
         })
     })
 }
 
 
-function deleteCML(line_number,cml_number){
-    const _sql = `DELETE FROM CML WHERE line_number = '${line_number}' AND cml_number = ${cml_number}`
 
-    db.serialize(() => {
-        db.run(_sql,(resault,err) =>{
-            if(!err)console.log('delete success')
-            else console.log('delete fail : ' + err)
-        })
+// ------------- Delete ----------
+function remove(selectTable,conditionObject,deleteAllRows = false){
+    var conditionObjectCount = (conditionObject !== null) ? Object.values(conditionObject).length : 0
+    
+    if(conditionObjectCount === 0 && !deleteAllRows)return
+
+    var tablename = ''
+    if(selectTable === SelectTable.INFO)tablename ='Info'
+    else if(selectTable === SelectTable.CML)tablename ='CML'
+    else if(selectTable === SelectTable.TP)tablename ='TestPoint'
+    else if(selectTable === SelectTable.TN)tablename ='Thickness'
+
+    var getCommand = `DELETE FROM ${tablename}`
+    if(conditionObjectCount > 0)getCommand += ' WHERE '
+    Object.keys(conditionObject).forEach((key) => {
+        const value = conditionObject[key]
+        getCommand += key + " = '" + value + "' "
+
+        if(conditionObjectCount > 1)getCommand += "AND "
+        else getCommand += ";"
+        conditionObjectCount--
     })
-}
 
-function deleteCMLAll(line_number){
-    const _sql = `DELETE FROM CML WHERE line_number = '${line_number}'`
-
-    db.serialize(() => {
-        db.run(_sql,(resault,err) =>{
-            if(!err)console.log('delete success')
-            else console.log('delete fail : ' + err)
-        })
-    })
-}
-
-
-function insertTP(tpList){
-    const _sql = `INSERT INTO TestPoint (line_number,cml_number,tp_description,note) VALUES (?,?,?,?);`
-
-    db.serialize(function(){
-        db.run(_sql,tpList,(result,error)=>{
-            if(!error){
-                console.log("database run : " + result)
+    return new Promise((resolve,reject)=>{
+        db.serialize(()=>{
+            if(!getAllRows){
+                // console.log(getCommand)
+                db.get(getCommand,(err,row)=>{
+                    if(err)reject(err)
+                    else resolve(row)
+                })
             }else{
-                console.log("database error : " + error)
+                getCommand = getCommand.replace("WHERE","")
+                // console.log(getCommand)
+                db.all(getCommand, (err, rows) => {
+                    if (err)reject(err)
+                    else resolve(rows)
+                })
             }
         })
     })
 }
-
-function getTPAll(line_number,cml_number){
-    const _sql = `SELECT * FROM TestPoint WHERE line_number = '${line_number}' AND cml_number = '${cml_number}'`
-
-    return new Promise((resolve,reject)=>{
-        db.serialize(() =>{
-            db.all(_sql,(err,rows)=>{
-                if(err)reject(err)
-                else resolve(rows)
-            })
-        })
-    })
-}
-
-function deleteTP(line_number,cml_number,tp_number){
-    const _sql = `DELETE FROM TestPoint WHERE line_number = '${line_number}' AND cml_number = ${cml_number} AND tp_number = '${tp_number}'`
-
-    db.serialize(() => {
-        db.run(_sql,(resault,err) =>{
-            if(!err)console.log('delete success')
-            else console.log('delete fail : ' + err)
-        })
-    })
-}
-
-function deleteTPAll(line_number,cml_number){
-    const _sql = `DELETE FROM TestPoint WHERE line_number = '${line_number}' AND cml_number = '${cml_number}'`
-
-    db.serialize(() => {
-        db.run(_sql,(resault,err) =>{
-            if(!err)console.log('delete success')
-            else console.log('delete fail : ' + err)
-        })
-    })
-}
-
-
-
-
-function insertTN(tpList){
-    const _sql = `INSERT INTO Thickness (line_number,cml_number,tp_number,inspection_date,actual_thickness) VALUES (?,?,?,?,?);`
-
-    db.serialize(function(){
-        db.run(_sql,tpList,(result,error)=>{
-            if(!error){
-                console.log("database run : " + result)
-            }else{
-                console.log("database error : " + error)
-            }
-        })
-    })
-}
-
-function getTNAll(line_number,cml_number,tp_number){
-    const _sql = `SELECT * FROM Thickness WHERE line_number = '${line_number}' AND cml_number = '${cml_number}' AND tp_number = '${tp_number}'`
-
-    return new Promise((resolve,reject)=>{
-        db.serialize(() =>{
-            db.all(_sql,(err,rows)=>{
-                if(err)reject(err)
-                else resolve(rows)
-            })
-        })
-    })
-}
-
-function deleteTN(line_number,cml_number,tp_number){
-    const _sql = `DELETE FROM Thickness WHERE line_number = '${line_number}' AND cml_number = ${cml_number} AND tp_number = '${tp_number}'`
-
-    db.serialize(() => {
-        db.run(_sql,(resault,err) =>{
-            if(!err)console.log('delete success')
-            else console.log('delete fail : ' + err)
-        })
-    })
-}
-
-function deleteTNAll(line_number,cml_number){
-    const _sql = `DELETE FROM Thickness WHERE line_number = '${line_number}' AND cml_number = '${cml_number}'`
-
-    db.serialize(() => {
-        db.run(_sql,(resault,err) =>{
-            if(!err)console.log('delete success')
-            else console.log('delete fail : ' + err)
-        })
-    })
-}
-
-
-
-
 
 
 module.exports = {
-    insertInfo,
-    deleteInfo,
-    getInfoAll,
-    getInfo,
-
-    insertCML,
-    getCMLAll,
-    deleteCML,
-    deleteCMLAll,
-
-    insertTP,
-    getTPAll,
-    deleteTP,
-    deleteTPAll
+    SelectTable,
+    insert,
+    get,
+    remove
 }

@@ -18,11 +18,11 @@
     
         <div class="btnAddPiping">
             <div>
-                <input id="btnAddPiping" type="button" value="Add Piping">
+                <button onclick="onClickAddPiping()">Add Piping</button>
             </div>
         </div>
 
-        <div class="tableInfoData">
+        <div class="tableAllDiv">
             <table>
                 <thead>
                     <tr>
@@ -50,9 +50,9 @@
                             <td><%= datalist[i].service %></td>
                             <td><%= datalist[i].material %></td>
                             <td>
-                                <div>
-                                    <a id="a_info" href="pipingInfo/<%=datalist[i].line_number%>">Info</a>
-                                    <a  id="a_details" href="pipingDetails?line_number=<%=datalist[i].line_number%>&cml_number=-1&tp_number=-1">Details</a>
+                                <div id="buttonTableDiv">
+                                    <button onclick="onClickInfo('pipingInfo/<%=datalist[i].line_number%>')" id="btnInfo">Info</button>
+                                    <button onclick="onClickDetails('pipingDetails?line_number=<%=datalist[i].line_number%>&cml_number=-1&tp_number=-1')" id="btnDetails">Details</button>
                                 </div>
 
                             </td>
@@ -69,12 +69,21 @@
     
     <script>
         const btnAddPiping = document.getElementById('btnAddPiping');
+        
+        function onClickInfo(link){
+            console.log(link)
+            window.location.href = link
+        }
 
-        btnAddPiping.addEventListener('click',()=>{
 
-            console.log("Hello World")
+        function onClickDetails(link){
+            console.log(link)
+            window.location.href = link
+        }
+
+        function onClickAddPiping(){
             window.location.href = '/addPage?table_name=info';
-        });
+        }
 
     </script>
 

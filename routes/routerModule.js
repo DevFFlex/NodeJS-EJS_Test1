@@ -21,10 +21,8 @@ const tn_type = []
 
 
 router.get('/',(req,res)=>{
-    db.getInfoAll().then((ddd)=>{
-
-        res.render('info.ejs',{datalist:ddd})
-        
+    db.get(db.SelectTable.INFO,{},true).then((rows)=>{
+        res.render('info.ejs',{datalist:rows})
     })
 
     
@@ -72,21 +70,26 @@ router.get('/pipingInfo/:id',(req,res)=>{
 
     const line_number = req.params.id
 
-    db.getInfo(line_number).then((obj)=>{
+    db.get(db.SelectTable.INFO,{
+        line_number:line_number
+    }).then((row)=>{
         const objList = [
-            obj.line_number,obj.location,obj.from,obj.to,obj.drawing_number,
-            obj.service,obj.material,obj.inservice_date,obj.pipe_size,obj.original_thickness,
-            obj.stress,obj.joint_efficiency,obj.ca,obj.design_life,obj.design_pressure,
-            obj.operating_pressure,obj.design_temperature,obj.operating_temperature
+            row.line_number,row.location,row.from,row.to,row.drawing_number,
+            row.service,row.material,row.inservice_date,row.pipe_size,row.original_thickness,
+            row.stress,row.joint_efficiency,row.ca,row.design_life,row.design_pressure,
+            row.operating_pressure,row.design_temperature,row.operating_temperature
             
-        ]
-        
+        ] 
         res.render('piping_info.ejs',{
             info_name:info_name,
             info_type:info_type,
             objList:objList
         })
     })
+
+    // db.getInfo(line_number).then((obj)=>{
+        
+    // })
 })
 router.get('/pipingDetails',(req,res)=>{
     const line_number = req.query.line_number
@@ -95,19 +98,16 @@ router.get('/pipingDetails',(req,res)=>{
 
     console.log(`${line_number}\t${cml_number}\t${tp_number}`)
 
-    db.getCMLAll(line_number).then((cml_data)=>{
-
-        console.log("getCML")
+    db.get(db.SelectTable.CML,{line_number:line_number}).then((cml_data)=>{
 
         return new Promise((resolve,reject)=>{
-            db.getTPAll(line_number,cml_number).then((tp_data)=>{
+            db.get(db.SelectTable.TP,{line_number:line_number,cml_number:cml_number},true).then((tp_data)=>{
                 resolve([cml_data,tp_data])
             })
         })
 
     }).then(([cml_data,tp_data])=>{
         
-        console.log(tp_data)
 
         res.render('piping_details.ejs',{
             line_number:line_number,
@@ -132,8 +132,10 @@ router.get('/pipingDetails',(req,res)=>{
 router.post('/insertInfo',(req,res)=>{
     const data = req.body
 
-    db.insertInfo(data.data)
-    res.send('{box:"Hello World"}')
+    db.insert(db.SelectTable.INFO,data.data).then((data)=>{
+        res.send('finish')
+    })
+
 })
 
 router.post('/insertCML',(req,res)=>{
@@ -141,9 +143,8 @@ router.post('/insertCML',(req,res)=>{
     var cmlList_client = data.data
     console.log(cmlList_client.length)
 
-    db.getInfo(data.data[0]).then((row)=>{
-        console.log(row.pipe_size)
-        
+    db.get(db.SelectTable.INFO,{},true).then((row)=>{
+
         var actual_outside_diameter = process.actualOutsideDiameter_Cal(row.pipe_size)
         var design_thickness = process.designThickness_Cal(row.design_pressure,actual_outside_diameter,row.stress,row.joint_efficiency)
         var structural_thickness = process.structuralThickness_Cal()
@@ -156,9 +157,7 @@ router.post('/insertCML',(req,res)=>{
         cmlList_client.push(structural_thickness)
         cmlList_client.push(required_thickness)
 
-        console.log(cmlList_client)
-
-        db.insertCML(cmlList_client)
+        db.insert(db.SelectTable.CML,cmlList_client)
     })
 
     // db.insertCML(data.data)
@@ -196,9 +195,10 @@ router.post('/deleteInfo',(req,res)=>{
 
 router.post('/deleteCML',(req,res)=>{
     const data = req.body
-    console.log(data)
+    console.log('delete data = ',data)
 
-    db.deleteCML(data.line_number,data.cml_number)
+    // db.deleteCML(data.line_number,data.cml_number)
+    db.remove(db.SelectTable.CML,{},true)
 })
 
 router.post('/deleteTP',(req,res)=>{
