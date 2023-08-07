@@ -82,21 +82,7 @@
         }
 
         function onClickAddPiping(){
-            fetch('input_page',{
-                method:"POST",
-                body:JSON.stringify({ 
-                    from:'info',
-                    datalist:[]
-                }),
-                headers:{
-                    "Content-Type": "application/json"
-                }
-            }).then((render)=>{
-                render.text().then((str)=>{
-                    document.write(str)
-                })
-                
-            })
+            window.location.href = "/input_page?from=info&datalist=[]"
         }
 
     </script>

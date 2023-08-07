@@ -1,6 +1,9 @@
 var sql3 = require('sqlite3').verbose()
 var db = new sql3.Database('dtb.db')
 
+
+var debug = false
+
 db.serialize(function(){
 
     var sql_command1 = 'CREATE TABLE IF NOT EXISTS Info(line_number varchar(200) PRIMARY KEY,location varchar(200),`from` varchar(200),`to` varchar(200),drawing_number varchar(200),service varchar(200),material varchar(200),inservice_date date,pipe_size INTEGER,original_thickness INTEGER,stress INTEGER,joint_efficiency INTEGER,ca INTEGER,design_life INTEGER,design_pressure INTEGER,operating_pressure INTEGER,design_temperature INTEGER,operating_temperature INTEGER);'
@@ -24,10 +27,17 @@ const SelectTable = {
 
 function sql_run(sql_command,datalist = null){
     return new Promise((resolve,reject)=>{
+        
         db.serialize(function(){
             db.run(sql_command,datalist,(result,error)=>{
-                if(!error)resolve(result)
-                else reject(error)
+                if(!error){
+                    resolve(result)
+                    if(debug)console.log('insert sql success')
+                }
+                else {
+                    reject(error)
+                    if(debug)console.log('insert sql success')
+                }
             })
         })
     })
@@ -81,10 +91,15 @@ function get(selectTable,conditionObject = {}){
 
     return new Promise((resolve,reject)=>{
         db.serialize(()=>{
-            console.log(getCommand)
             db.all(getCommand, (err, rows_row) => {
-                if (err)reject(err)
-                else resolve(rows_row)
+                if (err){
+                    reject(err)
+                    if(debug)console.log('get error\ncommand = ' + getCommand)
+                }
+                else {
+                    resolve(rows_row)
+                    if(debug)console.log('get success\ncommand = ' + getCommand)
+                }
             })
         })
     })
@@ -104,25 +119,105 @@ function remove(selectTable,conditionObject = {}){
     else if(selectTable === SelectTable.TP)tablename ='TestPoint'
     else if(selectTable === SelectTable.TN)tablename ='Thickness'
 
-    var getCommand = `DELETE FROM ${tablename}`
-    if(conditionObjectCount > 0)getCommand += ' WHERE '
-    Object.keys(conditionObject).forEach((key) => {
-        const value = conditionObject[key]
-        getCommand += key + " = '" + value + "' "
-
-        if(conditionObjectCount > 1)getCommand += "AND "
-        else getCommand += ";"
-        conditionObjectCount--
-    })
+    var deleteCommand = `DELETE FROM ${tablename}`
+    if(conditionObjectCount > 0){
+        deleteCommand += ' WHERE '
+        Object.keys(conditionObject).forEach((key) => {
+            const value = conditionObject[key]
+            deleteCommand += key + " = '" + value + "' "
+    
+            if(conditionObjectCount > 1)deleteCommand += "AND "
+            else deleteCommand += ";"
+            conditionObjectCount--
+        })
+    }
 
     return new Promise((resolve,reject)=>{
-        db.serialize(()=>{
-            db.all(getCommand, (err, rows_row) => {
-                if (err)reject(err)
-                else resolve(rows_row)
-            })
+        db.run(deleteCommand, (err) => {
+            if (err)reject(err)
+            else resolve('finish')
         })
     })
+    
+}
+
+function removeSelect(numberlist){
+    var numlistCount = 4
+    for(var i =0;i<4;i++)if(numberlist[i] === '-1')numlistCount--
+    console.log(numberlist)
+    console.log(numlistCount)
+    
+    return new Promise((resolve,reject)=>{
+        switch(numlistCount){
+            case 1:
+                console.log('remove Info')
+                remove(SelectTable.INFO,{
+                    line_number:numberlist[0]
+                }).then(()=>{
+                    remove(SelectTable.CML,{
+                        line_number:numberlist[0]
+                    }).then(()=>{
+                        remove(SelectTable.TP,{
+                            line_number:numberlist[0]
+                        }).then(()=>{
+                            remove(SelectTable.TN,{
+                                line_number:numberlist[0]
+                            }).then(()=>{
+                                resolve('finish')
+                            })
+                        })
+                    })
+                })
+                break
+            case 2:
+                console.log('remove CML')
+                remove(SelectTable.CML,{
+                    line_number:numberlist[0],
+                    cml_number:numberlist[1]
+                }).then(()=>{
+                    remove(SelectTable.TP,{
+                        line_number:numberlist[0],
+                        cml_number:numberlist[1]
+                    }).then(()=>{
+                        remove(SelectTable.TN,{
+                            line_number:numberlist[0],
+                            cml_number:numberlist[1]
+                        }).then(()=>{
+                            resolve('finish')
+                        })
+                    })
+                })
+                break
+            case 3:
+                console.log('remove TP')
+                remove(SelectTable.TP,{
+                    line_number:numberlist[0],
+                    cml_number:numberlist[1],
+                    tp_number:numberlist[2]
+                }).then(()=>{
+                    remove(SelectTable.TN,{
+                        line_number:numberlist[0],
+                        cml_number:numberlist[1],
+                        tp_number:numberlist[2]
+                    }).then(()=>{
+                        resolve('finish')
+                    })
+                })
+                break
+            case 4:
+                console.log('remove TN')
+                remove(SelectTable.TN,{
+                    line_number:numberlist[0],
+                    cml_number:numberlist[1],
+                    tp_number:numberlist[2],
+                    tn_number:numberlist[3]
+                }).then(()=>{
+                    resolve('finish')
+                })
+                break
+        }
+    })
+
 }
 
 
@@ -130,5 +225,7 @@ module.exports = {
     SelectTable,
     insert,
     get,
-    remove
+    remove,
+    debug,
+    removeSelect
 }

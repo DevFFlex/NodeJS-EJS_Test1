@@ -51,21 +51,30 @@
         function onClickSave(from,args){
         
 
-            alert(args[0] === null)
+            // alert(args.length + "\t" + args)
+            var argscount = 3
+            for(var i =0;i<3;i++){
+                if(args[i] === '')argscount--
+            }
 
-            return
 
             var target = ''
             var dataList = []
        
-            switch(args.length){
+            switch(argscount){
                 case 0:
                     break
                 case 1:
+                    dataList.push(args[0])
                     break
                 case 2:
+                    dataList.push(args[0])
+                    dataList.push(args[1])
                     break
                 case 3:
+                    dataList.push(args[0])
+                    dataList.push(args[1])
+                    dataList.push(args[2])
                     break   
             }
         
@@ -78,10 +87,12 @@
                     null_status = true
                 }
             }
+  
             fetch('api-insert',{
                 method:"POST",
                 body:JSON.stringify({ 
-                    data:dataList
+                    table_name:from,
+                    datalist:dataList
                 }),
                 headers:{
                     "Content-Type": "application/json"
@@ -89,7 +100,7 @@
             }).then(response=>{
                 response.text().then((str)=>{
                     console.log('data = ' + str)
-                    history.go(-1)
+                    window.location.href = document.referrer
                 })
             })
 
@@ -98,13 +109,16 @@
 
         function onClickCancel(){
             console.log("Click Cancel ")
-            window.location.href = '/'
+            window.location.href = document.referrer
             
         }
 
 
         function onClickRandom(){
             var dataList = []
+
+            
+
             for(var i = 0;i<etCount;i++){
                 dataList.push(document.getElementById("input_" + i).value)
                 

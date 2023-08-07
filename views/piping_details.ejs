@@ -28,7 +28,7 @@
             <div class="bar-child">
                 <p>CML</p>
                 <div class="btnAddCML">
-                    <button onclick="onClickAdd('cml','<%=line_number%>')">Add CML</button>
+                    <button onclick="onClickAdd('cml',['<%=line_number%>','-1','-1'])">Add CML</button>
                 </div>
             </div>
 
@@ -60,8 +60,8 @@
                             <td >
                                 <div class="buttonTableDiv">
                                     <button onclick="onClickView  ('cml',['<%=line_number%>','<%=cmlList[i].cml_number%>'])">View TP</button>
-                                    <button onClick="onClickEdit  ('cml',['<%=line_number%>','<%=cmlList[i].cml_number%>'])">Edit</button>
-                                    <button onclick="onClickDelete('cml',['<%=line_number%>','<%=cmlList[i].cml_number%>'])">Delete</button>
+                                    <button onClick="onClickEdit  ('cml',[])">Edit</button>
+                                    <button onclick="onClickDelete('cml',['<%=cmlList[i].line_number%>','<%=cmlList[i].cml_number%>','-1','-1'])">Delete</button>
                                 </div>
                             </td>
                         </tr>
@@ -87,7 +87,7 @@
             <div class="bar-child">
                 <p>Test Point</p>
                 <div class="btnAddCML">
-                    <button onclick="onClickAdd('tp','<%=line_number%>','<%=cml_number%>','-1')">Add CML</button>
+                    <button onclick="onClickAdd('tp',['<%=line_number%>','<%=cml_number%>','<%=tp_number%>','-1'])">Add TP</button>
                 </div>
             </div>
 
@@ -112,9 +112,9 @@
             
                             <td >
                                 <div class="buttonTableDiv">
-                                    <button onclick="onClickView('tp','<%=line_number%>','<%=tpList[i].cml_number%>','<%=tpList[i].tp_number%>')">View TP</button>
-                                    <button onClick="onClickEdit('tp','<%=line_number%>','<%=tpList[i].cml_number%>','<%=tpList[i].tp_number%>')">Edit</button>
-                                    <button onclick="onClickDelete('tp','<%=line_number%>','<%=tpList[i].cml_number%>','<%=tpList[i].tp_number%>')">Delete</button>
+                                    <button onclick="onClickView('tp',['<%=line_number%>','<%=tpList[i].cml_number%>','<%=tpList[i].tp_number%>'])">View TP</button>
+                                    <button onClick="onClickEdit('tp',['<%=line_number%>',[])">Edit</button>
+                                    <button onclick="onClickDelete('tp',['<%=tpList[i].line_number%>','<%=tpList[i].cml_number%>','<%=tpList[i].tp_number%>','-1'])">Delete</button>
                                 </div>
                             </td>
                         </tr>
@@ -141,7 +141,7 @@
             <div class="bar-child">
                 <p>Test Point</p>
                 <div class="btnAddCML">
-                    <button onclick="onClickAdd('tn','<%=line_number%>','<%=cml_number%>','<%=tp_number%>')">Add Thickness</button>
+                    <button onclick="onClickAdd('tn',['<%=line_number%>','<%=cml_number%>','<%=tp_number%>'])">Add Thickness</button>
                 </div>
             </div>
 
@@ -164,8 +164,8 @@
             
                             <td >
                                 <div class="buttonTableDiv">
-                                    <button onClick="onClickEdit('tp','<%=line_number%>','<%=tpList[i].cml_number%>','<%=tpList[i].tp_number%>')">Edit</button>
-                                    <button onclick="onClickDelete('tp','<%=line_number%>','<%=tpList[i].cml_number%>','<%=tpList[i].tp_number%>')">Delete</button>
+                                    <button onClick="onClickEdit('tn',[])">Edit</button>
+                                    <button onclick="onClickDelete('tn',['<%=tnList[i].line_number%>','<%=tnList[i].cml_number%>','<%=tnList[i].tp_number%>','<%=tnList[i].tn_number%>'])">Delete</button>
                                 </div>
                             </td>
                         </tr>
@@ -191,17 +191,15 @@
             window.location.href = "/"
         }
 
-        function onClickAdd(table,line_number,cml_number,tp_number){
-            fetch('input_page',{
-                method:"POST",
-                body:JSON.stringify({ 
-                    from:table,
-                    datalist:[]
-                }),
-                headers:{
-                    "Content-Type": "application/json"
-                }
-            })
+        function onClickAdd(table,args){
+            if(table === 'cml'){
+                window.location.href = `input_page?from=${table}&datalist=["${args[0]}"]`
+            }else if(table === 'tp'){
+                window.location.href = `input_page?from=${table}&datalist=["${args[0]}","${args[1]}"]`
+            }else if(table === 'tn'){
+                window.location.href = `input_page?from=${table}&datalist=["${args[0]}","${args[1]}","${args[2]}"]`
+            }
+
         }
 
 
@@ -212,31 +210,30 @@
 
 
         function onClickView(table,args){
-            alert([table,args])
-            // if(table === 'cml'){
-            //    window.location.href = `pipingDetails?line_number=${line_number}&cml_number=${cml_number}&tp_number=${tp_number}`
-            // }else if(table === 'tp'){
-            //     window.location.href = `pipingDetails?line_number=${line_number}&cml_number=${cml_number}&tp_number=${tp_number}`
-            // }
+            if(table === 'cml'){
+               window.location.href = `pipingDetails?line_number=${args[0]}&cml_number=${args[1]}&tp_number=-1`
+            }else if(table === 'tp'){
+                window.location.href = `pipingDetails?line_number=${args[0]}&cml_number=${args[1]}&tp_number=${args[2]}`
+            }
         }
         function onClickEdit(table,args){
             // alert('ClickEdit')
         }
 
         function onClickDelete(table,args){
-            // alert(table+"\t"+line_number+"\n"+cml_number)
-            event.preventDefault()
-            fetch('deleteCML',{
+            // alert(table)
+            // event.preventDefault()
+            fetch('/api-remove',{
                 method:"POST",
                 body:JSON.stringify({ 
-                    line_number:line_number,
-                    cml_number:cml_number
+                    from:table,
+                    datalist:args
                 }),
                 headers:{
                     "Content-Type": "application/json"
                 }
             }).then(res=>{
-                alert('delete success')
+                // alert('delete success')
                 location.reload()
             })
 
